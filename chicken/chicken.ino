@@ -78,6 +78,12 @@ void processInitState() {
       state = ReadyState;
       // buzz2 TODO
       Serial.println("buzz2 count down config set");
+      playMelody1();
+
+      // default value
+      lightValue = analogRead(LIGHT_SENSOR_PIN);
+      lightState = lightValue > LightThreshold;
+      lightStateLast = lightState;
     }
     button2StateLast = button2State;
   }
