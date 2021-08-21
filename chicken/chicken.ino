@@ -2,11 +2,14 @@
 
 Servo myservo;
 
-const int BUZZER_PIN = 6;
+const int BUZZER_PIN = 13;
 const int LIGHT_SENSOR_PIN = A2;
-const int BUTTON_1_PIN = 10;
-const int BUTTON_2_PIN = 11;
+const int BUTTON_1_PIN = 7;
+const int BUTTON_2_PIN = 8;
 const int MOTOR_PIN = 3;
+const int R_PIN = 9;
+const int G_PIN = 10;
+const int B_PIN = 11;
 
 int button1State = 0;
 int button1StateLast = 0;
@@ -31,19 +34,29 @@ unsigned long TIMES[] = {5000, 15000, 30000}; // sec, simulate 1mon, 2mon, 3mon)
 int selectedTimeIndex = 0;
 unsigned long selectedTime = TIMES[selectedTimeIndex];
 
+void showColor(int red, int green, int blue) {
+  analogWrite(R_PIN, red);
+  analogWrite(G_PIN, green);
+  analogWrite(B_PIN, blue);
+}
+
 void setup() {
   Serial.begin(9600);
-  while (!Serial);
+//  while (!Serial);
   pinMode(BUZZER_PIN,OUTPUT);
   pinMode(BUTTON_1_PIN,INPUT);
   pinMode(BUTTON_2_PIN,INPUT);
   pinMode(LIGHT_SENSOR_PIN,INPUT);
+  pinMode(R_PIN, OUTPUT);
+  pinMode(G_PIN, OUTPUT);
+  pinMode(B_PIN, OUTPUT);
   myservo.attach(MOTOR_PIN);
   // init values
   button1State = digitalRead(BUTTON_1_PIN);
   button2State = digitalRead(BUTTON_2_PIN);
   button1StateLast = button1State;
   button2StateLast = button2State;
+  showColor(0, 255, 0);
   Serial.println("Chicken start!!!!");
 }
 
@@ -68,12 +81,15 @@ void processInitState() {
       // 3 type of buzz based on selected time
       switch(selectedTimeIndex) {
         case 0:
+          showColor(0, 255, 0);
           playMelodyTime0();
           break;
         case 1:
+          showColor(0, 0, 255);
           playMelodyTime1();
           break;
         case 2:
+          showColor(255, 0, 0);
           playMelodyTime2();
           break;
       }
@@ -173,8 +189,6 @@ void timeIsUp() {
   // if time out
   //   beeeeeeep
   playMelodyStop();
-  //   servo open egg
-  myservo.write(90);
   //   go to **timeout state**
   Serial.println("Go to FinishState");
   state = FinishState;
@@ -193,6 +207,8 @@ void processFinishState() {
       //   buzz6 welcome to throw
       Serial.println("buzz6 welcome to throw");
       playMelodyElize();
+      //   servo open egg
+      myservo.write(90);
       //   goto first step, choose time
       Serial.println("Go to InitState");
       state = InitState;
