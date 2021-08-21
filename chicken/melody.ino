@@ -1,5 +1,28 @@
 #include "pitches.h"
 
+void playMelodyTime0() {
+  int noteDuration = 1000 / 4;
+  tone(BUZZER_PIN, NOTE_C4, noteDuration);
+  int pauseBetweenNotes = noteDuration * 1.30;
+  delay(pauseBetweenNotes);
+  noTone(BUZZER_PIN);
+}
+void playMelodyTime1() {
+  int noteDuration = 1000 / 4;
+  tone(BUZZER_PIN, NOTE_F4, noteDuration);
+  int pauseBetweenNotes = noteDuration * 1.30;
+  delay(pauseBetweenNotes);
+  noTone(BUZZER_PIN);
+}
+void playMelodyTime2() {
+  int noteDuration = 1000 / 4;
+  tone(BUZZER_PIN, NOTE_B5, noteDuration);
+  int pauseBetweenNotes = noteDuration * 1.30;
+  delay(pauseBetweenNotes);
+  noTone(BUZZER_PIN);
+}
+
+
 int numNotes1 = 8;
 // notes in the melody:
 int melody1[] = {
@@ -9,7 +32,6 @@ int melody1[] = {
 int noteDurations1[] = {
   4, 8, 8, 4, 4, 4, 4, 4
 };
-
 void playMelody1() {
   for (int thisNote = 0; thisNote < numNotes1; thisNote++) {
     int noteDuration = 1000 / noteDurations1[thisNote];

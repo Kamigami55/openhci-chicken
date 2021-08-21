@@ -66,7 +66,18 @@ void processInitState() {
       Serial.println("buzz1 change time");
       Serial.print("interval: ");
       Serial.println(selectedTime);
-      // TODO 3 type of buzz
+      // 3 type of buzz based on selected time
+      switch(selectedTimeIndex) {
+        case 0:
+          playMelodyTime0();
+          break;
+        case 1:
+          playMelodyTime1();
+          break;
+        case 2:
+          playMelodyTime2();
+          break;
+      }
     }
     button1StateLast = button1State;
   }
