@@ -87,9 +87,9 @@ void processInitState() {
       Serial.println("Go to ReadyState");
       // else if read button 2, start count down (into **ready state**)
       state = ReadyState;
-      // buzz2 TODO
+      // buzz2
+      playMelodyRestart();
       Serial.println("buzz2 count down config set");
-      playMelody1();
 
       // default value
       lightValue = analogRead(LIGHT_SENSOR_PIN);
@@ -170,6 +170,7 @@ void timeIsUp() {
   Serial.println("Go to FinishState");
   state = FinishState;
   isCounting = false;
+  playMelodyStop();
 }
 
 void processFinishState() {
@@ -184,6 +185,7 @@ void processFinishState() {
       //   goto first step, choose time
       Serial.println("Go to InitState");
       state = InitState;
+      playMelodyFinish();
     }
     lightStateLast = lightState;
   }
