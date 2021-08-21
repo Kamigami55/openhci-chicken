@@ -1,12 +1,12 @@
-//#include <Servo.h>   //載入函式庫，這是內建的，不用安裝
+#include <Servo.h>   //載入函式庫，這是內建的，不用安裝
 
-//Servo myservo;
+Servo myservo;
 
 const int BUZZER_PIN = 6;
 const int LIGHT_SENSOR_PIN = A2;
 const int BUTTON_1_PIN = 10;
 const int BUTTON_2_PIN = 11;
-//#define MOTOR_PIN D12;
+const int MOTOR_PIN = 3;
 
 int button1State = 0;
 int button1StateLast = 0;
@@ -34,18 +34,17 @@ unsigned long selectedTime = TIMES[selectedTimeIndex];
 void setup() {
   Serial.begin(9600);
   while (!Serial);
-  Serial.println("Chicken start!!!!");
   pinMode(BUZZER_PIN,OUTPUT);
   pinMode(BUTTON_1_PIN,INPUT);
   pinMode(BUTTON_2_PIN,INPUT);
   pinMode(LIGHT_SENSOR_PIN,INPUT);
-  //myservo.attach(MOTOR_PIN)
-  Serial.println("Chicken start!!!!2");
+  myservo.attach(MOTOR_PIN);
   // init values
   button1State = digitalRead(BUTTON_1_PIN);
   button2State = digitalRead(BUTTON_2_PIN);
   button1StateLast = button1State;
   button2StateLast = button2State;
+  Serial.println("Chicken start!!!!");
 }
 
 void processInitState() {
@@ -90,6 +89,8 @@ void processInitState() {
       // buzz2
       playMelodyRestart();
       Serial.println("buzz2 count down config set");
+      // servo close egg;
+      myservo.write(0);
 
       // default value
       lightValue = analogRead(LIGHT_SENSOR_PIN);
@@ -102,7 +103,8 @@ void processInitState() {
 
 void processReadyState() {
   // cont read light sensor
-  lightValue = analogRead(LIGHT_SENSOR_PIN);
+  //  lightValue = analogRead(LIGHT_SENSOR_PIN);
+  lightValue = lightValue * 0.7 + analogRead(LIGHT_SENSOR_PIN) * 0.3;
   //Serial.println(lightValue);
   lightState = lightValue > LightThreshold;
   
@@ -110,7 +112,8 @@ void processReadyState() {
     // if from light to dark
     
     if (lightState == LOW) {
-    //   TODO buzz3
+    // buzz3
+      playMelodyFinish();
       Serial.println("buzz3 user close box");
     //   trans to **lock state** 
       Serial.println("Go to LockState");
@@ -129,7 +132,8 @@ void processReadyState() {
 }
 
 void processLockState() {
-  lightValue = analogRead(LIGHT_SENSOR_PIN);
+//  lightValue = analogRead(LIGHT_SENSOR_PIN);
+  lightValue = lightValue * 0.7 + analogRead(LIGHT_SENSOR_PIN) * 0.3;
   lightState = lightValue > LightThreshold;
   
   if (lightState != lightStateLast) {
@@ -137,7 +141,8 @@ void processLockState() {
     if (lightState == HIGH) {
       Serial.println("buzz4 user want to take out things");
       //   buzz4 user want to take out things
-      //   ??go to **middle state**
+      playMelodyFate();
+      //   go to **middle state**
       Serial.println("Go to LockOpenedState");
       state = LockOpenedState;
     }
@@ -146,7 +151,8 @@ void processLockState() {
 }
 
 void processLockOpenedState() {
-  lightValue = analogRead(LIGHT_SENSOR_PIN);
+//  lightValue = analogRead(LIGHT_SENSOR_PIN);
+  lightValue = lightValue * 0.7 + analogRead(LIGHT_SENSOR_PIN) * 0.3;
   lightState = lightValue > LightThreshold;
   
   if (lightState != lightStateLast) {
@@ -154,6 +160,7 @@ void processLockOpenedState() {
     if (lightState == LOW) {
       //   buzz5 close again
       Serial.println("buzz5 close again");
+      playMelodyMario();
       //   ??go to **Lock state**
       Serial.println("Go to LockState");
       state = LockState;
@@ -164,28 +171,32 @@ void processLockOpenedState() {
 
 void timeIsUp() {
   // if time out
-  //   beeeeeeep TODO
-  //   servo open egg TODO
+  //   beeeeeeep
+  playMelodyStop();
+  //   servo open egg
+  myservo.write(90);
   //   go to **timeout state**
   Serial.println("Go to FinishState");
   state = FinishState;
   isCounting = false;
-  playMelodyStop();
+  
 }
 
 void processFinishState() {
-  lightValue = analogRead(LIGHT_SENSOR_PIN);
+//  lightValue = analogRead(LIGHT_SENSOR_PIN);
+  lightValue = lightValue * 0.7 + analogRead(LIGHT_SENSOR_PIN) * 0.3;
   lightState = lightValue > LightThreshold;
   
   if (lightState != lightStateLast) {
     // if light after timeout
     if (lightState == HIGH) {
-      //   buzz6 welcome to throw TODO
+      //   buzz6 welcome to throw
       Serial.println("buzz6 welcome to throw");
+      playMelodyElize();
       //   goto first step, choose time
       Serial.println("Go to InitState");
       state = InitState;
-      playMelodyFinish();
+      
     }
     lightStateLast = lightState;
   }
@@ -215,19 +226,5 @@ void loop() {
   }
 
   
-  
-  //myservo.write(180);
-  // read the value from the sensor:
-  //sensorValue = analogRead(LIGHT_SENSOR_PIN);
-  //sensorValue = digitalRead(BUTTON_1_PIN);
-  // turn the ledPin on
-  
-  //delay(500);
-
-  // stop the program for <sensorValue> milliseconds:
-  //delay(sensorValue);
-  // turn the ledPin off:
-  //digitalWrite(ledPin, LOW);
-  // stop the program for for <sensorValue> milliseconds:
-  //delay(sensorValue);
+  delay(100);
 }
