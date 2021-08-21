@@ -2,14 +2,10 @@
 
 //Servo myservo;
 
-int sensorValue = 0;  // variable to store the value coming from the sensor
-//#define LIGHT_SENSOR_PIN A2;
-//const int BUZZER_PIN = 2;
+const int BUZZER_PIN = 6;
 const int LIGHT_SENSOR_PIN = A2;
-const int BUTTON_1_PIN = 2;
-const int BUTTON_2_PIN = 13;
-const int LIGHT_SENSOR_PIN = 12;
-//const int BUTTON_2_PIN = 13;
+const int BUTTON_1_PIN = 10;
+const int BUTTON_2_PIN = 11;
 //#define MOTOR_PIN D12;
 
 int button1State = 0;
@@ -19,7 +15,7 @@ int button2StateLast = 0;
 int lightValue = 0;
 int lightState = LOW;
 int lightStateLast = LOW;
-const int LightThreshold = 800;
+const int LightThreshold = 550;
 
 const int InitState = 1;
 const int ReadyState = 2;
@@ -29,20 +25,27 @@ const int FinishState = 5;
 int state = InitState;
 
 bool isCounting = false;
-int beginTime = 0;
+unsigned long beginTime = 0;
 
-const int TIMES = [5000, 15000, 30000]; // sec, simulate 1mon, 2mon, 3mon)
+unsigned long TIMES[] = {5000, 15000, 30000}; // sec, simulate 1mon, 2mon, 3mon)
 int selectedTimeIndex = 0;
-int selectedTime = TIMES[selectedTimeIndex];
+unsigned long selectedTime = TIMES[selectedTimeIndex];
 
 void setup() {
   Serial.begin(9600);
-  Serial.print("Chicken start!!!!");
-  //pinMode(BUZZER_PIN,OUTPUT);
+  while (!Serial);
+  Serial.println("Chicken start!!!!");
+  pinMode(BUZZER_PIN,OUTPUT);
   pinMode(BUTTON_1_PIN,INPUT);
   pinMode(BUTTON_2_PIN,INPUT);
-  //pinMode(LIGHT_SENSOR_PIN,INPUT);
+  pinMode(LIGHT_SENSOR_PIN,INPUT);
   //myservo.attach(MOTOR_PIN)
+  Serial.println("Chicken start!!!!2");
+  // init values
+  button1State = digitalRead(BUTTON_1_PIN);
+  button2State = digitalRead(BUTTON_2_PIN);
+  button1StateLast = button1State;
+  button2StateLast = button2State;
 }
 
 void processInitState() {
@@ -51,36 +54,39 @@ void processInitState() {
   // cont read 2 button
   // default 1month
   button1State = digitalRead(BUTTON_1_PIN);
-    button2State = digitalRead(BUTTON_2_PIN);
-    if (button1State != button1StateLast) {
-      if (button1State == HIGH) {
-        Serial.print("Toggle time");
-        // if read button 1, switch between times
-        if (selectedTimeIndex >= 2) selectedTimeIndex = 0;
-        else ++selectedTimeIndex;
-        selectedTime = TIMES[selectedTimeIndex];
-        // buzz
-        Serial.print("buzz1 change time");
-        // TODO 3 type of buzz
-      }
-      button1StateLast = button1State;
+  button2State = digitalRead(BUTTON_2_PIN);
+  if (button1State != button1StateLast) {
+    if (button1State == HIGH) {
+      Serial.println("Toggle time");
+      // if read button 1, switch between times
+      if (selectedTimeIndex >= 2) selectedTimeIndex = 0;
+      else ++selectedTimeIndex;
+      selectedTime = TIMES[selectedTimeIndex];
+      // buzz
+      Serial.println("buzz1 change time");
+      Serial.print("interval: ");
+      Serial.println(selectedTime);
+      // TODO 3 type of buzz
     }
-  
-    if (button2State != button2StateLast) {
-      if (button1State == HIGH) {
-        Serial.print("Go to ReadyState");
-        // else if read button 2, start count down (into **ready state**)
-        state = ReadyState;
-        // buzz2 TODO
-        Serial.print("buzz2 count down config set");
-      }
-      button2StateLast = button2State;
+    button1StateLast = button1State;
+  }
+
+  if (button2State != button2StateLast) {
+    if (button2State == HIGH) {
+      Serial.println("Go to ReadyState");
+      // else if read button 2, start count down (into **ready state**)
+      state = ReadyState;
+      // buzz2 TODO
+      Serial.println("buzz2 count down config set");
     }
+    button2StateLast = button2State;
+  }
 }
 
 void processReadyState() {
   // cont read light sensor
   lightValue = analogRead(LIGHT_SENSOR_PIN);
+  //Serial.println(lightValue);
   lightState = lightValue > LightThreshold;
   
   if (lightState != lightStateLast) {
@@ -88,15 +94,18 @@ void processReadyState() {
     
     if (lightState == LOW) {
     //   TODO buzz3
-      Serial.print("buzz3 user close box");
+      Serial.println("buzz3 user close box");
     //   trans to **lock state** 
-      Serial.print("Go to LockState");
+      Serial.println("Go to LockState");
       state = LockState;
       // start counting
       isCounting = true;
-      beginTIme = millis();
-      Serial.print("Start counting");
-      Serial.print("beginTIme: " + beginTIme);
+      beginTime = millis();
+      Serial.println("Start counting");
+      Serial.print("interval: ");
+      Serial.println(selectedTime);
+      Serial.print("beginTime: ");
+      Serial.println(beginTime);
     }
     lightStateLast = lightState;
   }
@@ -109,10 +118,10 @@ void processLockState() {
   if (lightState != lightStateLast) {
     // if get light and in closing state
     if (lightState == HIGH) {
-      Serial.print("buzz4 user want to take out things");
+      Serial.println("buzz4 user want to take out things");
       //   buzz4 user want to take out things
       //   ??go to **middle state**
-      Serial.print("Go to LockOpenedState");
+      Serial.println("Go to LockOpenedState");
       state = LockOpenedState;
     }
     lightStateLast = lightState;
@@ -127,9 +136,9 @@ void processLockOpenedState() {
     // if get dark again
     if (lightState == LOW) {
       //   buzz5 close again
-      Serial.print("buzz5 close again");
+      Serial.println("buzz5 close again");
       //   ??go to **Lock state**
-      Serial.print("Go to LockState");
+      Serial.println("Go to LockState");
       state = LockState;
     }
     lightStateLast = lightState;
@@ -141,7 +150,7 @@ void timeIsUp() {
   //   beeeeeeep TODO
   //   servo open egg TODO
   //   go to **timeout state**
-  Serial.print("Go to FinishState");
+  Serial.println("Go to FinishState");
   state = FinishState;
   isCounting = false;
 }
@@ -154,9 +163,9 @@ void processFinishState() {
     // if light after timeout
     if (lightState == HIGH) {
       //   buzz6 welcome to throw TODO
-      Serial.print("buzz6 welcome to throw");
+      Serial.println("buzz6 welcome to throw");
       //   goto first step, choose time
-      Serial.print("Go to InitState");
+      Serial.println("Go to InitState");
       state = InitState;
     }
     lightStateLast = lightState;
@@ -181,7 +190,7 @@ void loop() {
   // counting timeout logics
   if (isCounting) {
     if (millis() - beginTime > selectedTime) {
-      Serial.print("Time IS UP");
+      Serial.println("Time IS UP");
       timeIsUp();
     }
   }
