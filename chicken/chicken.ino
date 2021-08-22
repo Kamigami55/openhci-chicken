@@ -29,6 +29,7 @@ int state = InitState;
 
 bool isCounting = false;
 unsigned long beginTime = 0;
+unsigned long pauseBeginTime = 0;
 
 unsigned long TIMES[] = {5000, 15000, 30000}; // sec, simulate 1mon, 2mon, 3mon)
 int selectedTimeIndex = 0;
@@ -161,6 +162,8 @@ void processLockState() {
       //   go to **middle state**
       Serial.println("Go to LockOpenedState");
       state = LockOpenedState;
+      pauseBeginTime = millis();
+      isCounting = false;
     }
     lightStateLast = lightState;
   } 
@@ -180,6 +183,8 @@ void processLockOpenedState() {
       //   ??go to **Lock state**
       Serial.println("Go to LockState");
       state = LockState;
+      beginTime += millis() - pauseBeginTime;
+      isCounting = true;
     }
     lightStateLast = lightState;
   }  
