@@ -52,6 +52,7 @@ void setup() {
   pinMode(G_PIN, OUTPUT);
   pinMode(B_PIN, OUTPUT);
   myservo.attach(MOTOR_PIN);
+  myservo.write(35);
   // init values
   button1State = digitalRead(BUTTON_1_PIN);
   button2State = digitalRead(BUTTON_2_PIN);
@@ -107,7 +108,7 @@ void processInitState() {
       playMelodyRestart();
       Serial.println("buzz2 count down config set");
       // servo close egg;
-      myservo.write(0);
+      myservo.write(120);
 
       // default value
       lightValue = analogRead(LIGHT_SENSOR_PIN);
@@ -213,7 +214,7 @@ void processFinishState() {
       Serial.println("buzz6 welcome to throw");
       playMelodyElize();
       //   servo open egg
-      myservo.write(90);
+      myservo.write(35);
       //   goto first step, choose time
       Serial.println("Go to InitState");
       state = InitState;
